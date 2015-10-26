@@ -41,7 +41,7 @@ import org.identityconnectors.framework.common.objects.OperationalAttributeInfos
 // builder: SchemaBuilder instance for the connector
 //
 // The connector will make the final call to builder.build()
-// so the scipt just need to declare the different object types.
+// so the script just need to declare the different object types.
 
 // This sample shows how to create 2 basic ObjectTypes: __ACCOUNT__ and __GROUP__.
 // It works with OpenDJ 2.6 REST sample attribute:

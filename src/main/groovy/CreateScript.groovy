@@ -75,47 +75,47 @@ def roleTemplate = '''
 '''
 
 switch ( objectClass ) {
-case "__ACCOUNT__":
-if (attributes.get("organization") != null){
-       orgCap = attributes.get("organization");
-	   
-	   def binding = [
-        objectName: (attributes.get("_id") == null)? "": attributes.get("_id").get(0),
-		objectType: "user",
-		id: orgCap.tokenize('%')[0],
-		capacity : orgCap.tokenize('%')[1]
-		];
-	
-		template =engine.createTemplate(roleTemplate).make(binding).toString();
-		response = connection.post(path : '/api/action/member_create', body : template);
-    } else {
-		
+	case "__ACCOUNT__":
+		if (attributes.get("organization") != null){
+			orgCap = attributes.get("organization");
+
+			def binding = [
+				objectName: (attributes.get("_id") == null)? "": attributes.get("_id").get(0),
+				objectType: "user",
+				id: orgCap.tokenize('%')[0],
+				capacity : orgCap.tokenize('%')[1]
+			];
+
+			template =engine.createTemplate(roleTemplate).make(binding).toString();
+			response = connection.post(path : '/api/action/member_create', body : template);
+		} else {
+
+			def binding = [
+				name: (attributes.get("_id") == null)? "": attributes.get("_id").get(0),
+				email: (attributes.get("email") == null)? "": attributes.get("email").get(0),
+				password: "weDoNotNeedPassword",
+				id: (attributes.get("_id") == null)? "": attributes.get("_id").get(0),
+				fullName: (attributes.get("fullName") == null)? "fullName": attributes.get("fullName").get(0),
+				about: (attributes.get("about") == null)? "": attributes.get("about").get(0),
+				openid: (attributes.get("openid") == null)? "": attributes.get("openid").get(0)
+			];
+
+			template =engine.createTemplate(userTemplate).make(binding).toString();
+			System.out.println(template);
+			response = connection.post(path : '/api/action/user_create', body : template);
+		}
+		break
+
+	case "__GROUP__":
+
 		def binding = [
 			name: (attributes.get("_id") == null)? "": attributes.get("_id").get(0),
-			email: (attributes.get("email") == null)? "": attributes.get("email").get(0),
-			password: "weDoNotNeedPassword",
+			title: (attributes.get("title") == null)? "": attributes.get("title").get(0),
 			id: (attributes.get("_id") == null)? "": attributes.get("_id").get(0),
-			fullName: (attributes.get("fullName") == null)? "fullName": attributes.get("fullName").get(0),
-			about: (attributes.get("about") == null)? "": attributes.get("about").get(0),
-			openid: (attributes.get("openid") == null)? "": attributes.get("openid").get(0)
 		];
-		
-		template =engine.createTemplate(userTemplate).make(binding).toString();
-		System.out.println(template);
-		response = connection.post(path : '/api/action/user_create', body : template);
-	}
-	break
 
-case "__GROUP__":
-
-def binding = [
-        name: (attributes.get("_id") == null)? "": attributes.get("_id").get(0),
-        title: (attributes.get("title") == null)? "": attributes.get("title").get(0),
-		id: (attributes.get("_id") == null)? "": attributes.get("_id").get(0),
-    ];
-	
-	template =engine.createTemplate(groupTemplate).make(binding).toString();
-    response = connection.post(path : '/api/action/organization_create', body : template);
-	break
+		template =engine.createTemplate(groupTemplate).make(binding).toString();
+		response = connection.post(path : '/api/action/organization_create', body : template);
+		break
 }
 return id;

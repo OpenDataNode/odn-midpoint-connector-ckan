@@ -30,7 +30,7 @@
 // (see: http://groovy.codehaus.org/modules/http-builder/apidocs/groovyx/net/http/RESTClient.html)
 // configuration : handler to the connector's configuration object
 //
-// action: String correponding to the action (UPDATE/ADD_ATTRIBUTE_VALUES/REMOVE_ATTRIBUTE_VALUES)
+// action: String corresponding to the action (UPDATE/ADD_ATTRIBUTE_VALUES/REMOVE_ATTRIBUTE_VALUES)
 //   - UPDATE : For each input attribute, replace all of the current values of that attribute
 //     in the target object with the values of that attribute.
 //   - ADD_ATTRIBUTE_VALUES: For each attribute that the input set contains, add to the current values
@@ -82,64 +82,64 @@ def roleTemplate = '''
 '''
 
 switch ( objectClass ) {
-case "__ACCOUNT__":
-if (attributes.get("organization") != null){
-       orgCap = attributes.get("organization").get(0);
-	   def binding = [
-        objectName: uid,
-		objectType : "user",
-		id: orgCap.tokenize('%')[0],
-		capacity : orgCap.tokenize('%')[1]
-		];
-	
-		template =engine.createTemplate(roleTemplate).make(binding).toString();
-		switch (action) {
-			case "REMOVE_ATTRIBUTE_VALUES" :
-				response = connection.post(path : '/api/action/member_delete', body : template);
-				break
-			default:
-				response = connection.post(path : '/api/action/member_create', body : template);
-				break
-		}
-    } else {
-		result = null;
-		if (attributes.get("_id") != null){
-			val = attributes.get("_id").get(0);
-			result = result + val + ','
-		} 
-		if (attributes.get("__NAME__") != null){
-			val = attributes.get("__NAME__").get(0);
-			result = result + val + ','
-		} 
-		if (attributes.get("email") != null){
-			val = attributes.get("email").get(0);
-			result = result + val + ','
-		} 
-		if (attributes.get("fullName") != null){
-			val = attributes.get("fullName").get(0);
-			result = result + val + ','
-		} 
-		if (attributes.get("about") != null){
-			val = attributes.get("about").get(0);
-			result = result + val
-		} 
-		
-		if (result != null){
-			connection.put( path : '/api/action/user_update', body: '{' + result + '}');
-		}
-	}
-	break
+	case "__ACCOUNT__":
+		if (attributes.get("organization") != null){
+			orgCap = attributes.get("organization").get(0);
+			def binding = [
+				objectName: uid,
+				objectType : "user",
+				id: orgCap.tokenize('%')[0],
+				capacity : orgCap.tokenize('%')[1]
+			];
 
-case "__GROUP__":
+			template =engine.createTemplate(roleTemplate).make(binding).toString();
+			switch (action) {
+				case "REMOVE_ATTRIBUTE_VALUES" :
+					response = connection.post(path : '/api/action/member_delete', body : template);
+					break
+				default:
+					response = connection.post(path : '/api/action/member_create', body : template);
+					break
+			}
+		} else {
+			result = null;
+			if (attributes.get("_id") != null){
+				val = attributes.get("_id").get(0);
+				result = result + val + ','
+			}
+			if (attributes.get("__NAME__") != null){
+				val = attributes.get("__NAME__").get(0);
+				result = result + val + ','
+			}
+			if (attributes.get("email") != null){
+				val = attributes.get("email").get(0);
+				result = result + val + ','
+			}
+			if (attributes.get("fullName") != null){
+				val = attributes.get("fullName").get(0);
+				result = result + val + ','
+			}
+			if (attributes.get("about") != null){
+				val = attributes.get("about").get(0);
+				result = result + val
+			}
+
+			if (result != null){
+				connection.put( path : '/api/action/user_update', body: '{' + result + '}');
+			}
+		}
+		break
+
+	case "__GROUP__":
 		def binding = [
-        name: (attributes.get("_id") == null)? "": attributes.get("_id").get(0),
-        title: "some organization",
-		id: (attributes.get("_id") == null)? "": attributes.get("_id").get(0),
-    ];
-	
-	template =engine.createTemplate(groupTemplate).make(binding).toString();
-	response = connection.post(path : '/api/action/organization_create', body : template);
-	break
-	
+			name: (attributes.get("_id") == null)? "": attributes.get("_id").get(0),
+			title: "some organization",
+			id: (attributes.get("_id") == null)? "": attributes.get("_id").get(0),
+		];
+
+		template =engine.createTemplate(groupTemplate).make(binding).toString();
+		response = connection.post(path : '/api/action/organization_create', body : template);
+		break
+
 }
 return uid;

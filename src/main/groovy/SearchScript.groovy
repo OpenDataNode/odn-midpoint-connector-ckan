@@ -60,80 +60,80 @@ log.info("Entering "+action+" Script");
 // We can use Groovy template engine to generate our queries
 engine = new groovy.text.SimpleTemplateEngine();
 searchTemplates = [
-    EQUALS:'${not ? "!" : ""}$left+eq+%22$right%22',
-    CONTAINS:'${not ? "!" : ""}$left+co+%22$right%22',
-    STARTSWITH:'${not ? "!" : ""}$left+sw+%22$right%22',
-    LESSTHAN:'${not ? "!" : ""}$left+lt+%22$right%22',
-    LESSTHANOREQUAL:'${not ? "!" : ""}$left+le+%22$right%22',
-    GREATERTHAN:'${not ? "!" : ""}$left+gt+%22$right%22',
-    GREATERTHANOREQUAL:'${not ? "!" : ""}$left+ge+%22$right%22',
-    ENDSWITH:'${not ? "!" : ""}$left+ew+%22$right%22',
+	EQUALS:'${not ? "!" : ""}$left+eq+%22$right%22',
+	CONTAINS:'${not ? "!" : ""}$left+co+%22$right%22',
+	STARTSWITH:'${not ? "!" : ""}$left+sw+%22$right%22',
+	LESSTHAN:'${not ? "!" : ""}$left+lt+%22$right%22',
+	LESSTHANOREQUAL:'${not ? "!" : ""}$left+le+%22$right%22',
+	GREATERTHAN:'${not ? "!" : ""}$left+gt+%22$right%22',
+	GREATERTHANOREQUAL:'${not ? "!" : ""}$left+ge+%22$right%22',
+	ENDSWITH:'${not ? "!" : ""}$left+ew+%22$right%22',
 ]
 
 def genQuery (queryObj) {
-    if (queryObj.get("left").equalsIgnoreCase("__UID__")) queryObj.put("left","_id");
-    if (queryObj.get("left").equalsIgnoreCase("__NAME__")) queryObj.put("left","_id");
-    def wt = searchTemplates.get(queryObj.operation);
-    def binding = [left:queryObj.left, right:queryObj.right, not:queryObj.not];
-    def template = engine.createTemplate(wt).make(binding);
-    return template.toString();
-}   
+	if (queryObj.get("left").equalsIgnoreCase("__UID__")) queryObj.put("left","_id");
+	if (queryObj.get("left").equalsIgnoreCase("__NAME__")) queryObj.put("left","_id");
+	def wt = searchTemplates.get(queryObj.operation);
+	def binding = [left:queryObj.left, right:queryObj.right, not:queryObj.not];
+	def template = engine.createTemplate(wt).make(binding);
+	return template.toString();
+}
 
 def result = []
 basePath = "";
 switch ( objectClass ) {
-case "__ACCOUNT__":
-    basePath = "/users/";
-    break
-case "__GROUP__":
-    basePath = "/groups/";
+	case "__ACCOUNT__":
+		basePath = "/users/";
+		break
+	case "__GROUP__":
+		basePath = "/groups/";
 }
 
 if (query != null){
-    if (query.operation == "AND" || query.operation == "OR"){
-        log.ok("Complex filter is: "+ query.operation)
-        search = "("+genQuery(query.left)+"+"+query.operation+"+"+genQuery(query.right)+")"
-        log.ok("Search filter is: "+ search)
-        connection.get( path : basePath, queryString : "_queryFilter="+search){
-            resp, json -> json.result.each(){result.add([__UID__:it._id, __NAME__:it._id])}
-        }
-        // Exact query on the _id
-    } else if ((query.get("left").equalsIgnoreCase("__UID__") || query.get("left").equalsIgnoreCase("__NAME__")) && query.get("operation").equalsIgnoreCase("EQUALS")){
-        log.ok("Exact query on : "+ query.get("right"))
-        
-        switch ( objectClass ) {
-        case "__ACCOUNT__":
-		response = connection.get( path : '/api/action/user_show', query : ['id' : query.get("right")]);
-     	json = response.getData();
-	        result.add([__UID__ : json.result.id,
+	if (query.operation == "AND" || query.operation == "OR"){
+		log.ok("Complex filter is: "+ query.operation)
+		search = "("+genQuery(query.left)+"+"+query.operation+"+"+genQuery(query.right)+")"
+		log.ok("Search filter is: "+ search)
+		connection.get( path : basePath, queryString : "_queryFilter="+search){ resp, json ->
+			json.result.each(){result.add([__UID__:it._id, __NAME__:it._id])}
+		}
+		// Exact query on the _id
+	} else if ((query.get("left").equalsIgnoreCase("__UID__") || query.get("left").equalsIgnoreCase("__NAME__")) && query.get("operation").equalsIgnoreCase("EQUALS")){
+		log.ok("Exact query on : "+ query.get("right"))
+
+		switch ( objectClass ) {
+			case "__ACCOUNT__":
+				response = connection.get( path : '/api/action/user_show', query : ['id' : query.get("right")]);
+				json = response.getData();
+				result.add([__UID__ : json.result.id,
 					id : json.result.id,
-                    __NAME__ : json.result.name,
+					__NAME__ : json.result.name,
 					email : json.result.email,
 					fullName : json.result.fullname
-                ]);
-            break
-        case "__GROUP__":
-		response = connection.get( path : '/api/action/organization_show', query : ['id' : query.get("right")]);
-    	json = response.getData();
-		
-            result.add([__UID__ : json.result.id,
+				]);
+				break
+			case "__GROUP__":
+				response = connection.get( path : '/api/action/organization_show', query : ['id' : query.get("right")]);
+				json = response.getData();
+
+				result.add([__UID__ : json.result.id,
 					id : json.result.id,
-                    __NAME__ : json.result.id, 
-                    title : json.result.title,
-                ]);
-        }
-    } else {
-       // search = genQuery(query)
-       // log.ok("Search filter is: "+ search)
-       // connection.get( path : 'api/action/member_list', queryString : "_queryFilter="+search){
-        //    resp, json -> json.result.each(){result.add([__UID__:it._id, __NAME__:it._id])}
-       // }
-    }
+					__NAME__ : json.result.id,
+					title : json.result.title,
+				]);
+		}
+	} else {
+		// search = genQuery(query)
+		// log.ok("Search filter is: "+ search)
+		// connection.get( path : 'api/action/member_list', queryString : "_queryFilter="+search){
+		//    resp, json -> json.result.each(){result.add([__UID__:it._id, __NAME__:it._id])}
+		// }
+	}
 }
 else{ // null query, return all ids
-    log.ok("Search filter is query-all-ids: ")
-    connection.get( path : basePath, query : [_queryFilter : '_id pr']){
-        resp, json -> json.result.each(){result.add([__UID__:it._id, __NAME__:it._id])}
-    }
+	log.ok("Search filter is query-all-ids: ")
+	connection.get( path : basePath, query : [_queryFilter : '_id pr']){ resp, json ->
+		json.result.each(){result.add([__UID__:it._id, __NAME__:it._id])}
+	}
 }
 return result;

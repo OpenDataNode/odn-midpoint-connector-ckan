@@ -49,11 +49,11 @@ def roleTemplate = '''
 
 switch ( objectClass ) {
 	case "__ACCOUNT__":
-	    connection.post(path : '/action/user_delete/'+uid);
+		connection.post(path : '/action/user_delete/'+uid);
 		break
-    case "__GROUP__":
-        connection.post(path : '/api/action/organization_delete/'+uid);
+	case "__GROUP__":
+		connection.post(path : '/api/action/organization_delete/'+uid);
 		break
-	
+
 }
 return uid;
